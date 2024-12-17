@@ -158,4 +158,27 @@ func handleMQTTMsg(client mqtt.Client, msg mqtt.Message) {
 		}
 
 	}
+	switch topic {
+	case "tracked_object_update":
+		var genai models.MQTTGenai
+		json.Unmarshal(msg.Payload(), &review)
+
+		switch genai.Type {
+		case "new":
+			log.Debug().
+				Str("genai_id", genai.After.ID).
+				Msg("New tracked object update received")
+			processReview(genai.After.Genai)
+		case "update":
+			log.Debug().
+				Str("genai_id", genai.After.ID).
+				Msg("Tracked object update received")
+			processReview(genai.After.Genai)
+		case "end":
+			log.Debug().
+				Str("genai_id", genai.After.ID).
+				Msg("Update ended")
+			delZoneAlerted(models.Genai)
+			}
+		}
 }
